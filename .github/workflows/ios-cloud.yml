@@ -17,7 +17,7 @@ jobs:
       - name: Extract verified source package
         shell: bash
         run: |
-          echo "06ec6302e0078ecd0c3422816d1f3f29248bae0c08a964c00d1ec567c20190fe  Wuduh-iPhone-source.zip" | shasum -a 256 -c -
+          echo "6f696472cb5ea960c24f8dc680db3d743f2d79f3043d59ba8534120f8cf6f16c  Wuduh-iPhone-source.zip" | shasum -a 256 -c -
           mkdir source
           unzip -q Wuduh-iPhone-source.zip -d source
       - name: Locate project
