@@ -1,0 +1,73 @@
+name: Build iPhone IPA
+on:
+  workflow_dispatch:
+    inputs:
+      run_tests:
+        description: Run simulator tests before archiving
+        type: boolean
+        default: true
+permissions:
+  contents: read
+jobs:
+  ios:
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract verified source package
+        shell: bash
+        run: |
+          echo "4744a9ee15f95dda085f795fbd614b42fe5d9f62c6e9a3901efe7c9a09218c4a  Wuduh-iPhone-source.zip" | shasum -a 256 -c -
+          mkdir source
+          unzip -q Wuduh-iPhone-source.zip -d source
+      - name: Locate project
+        shell: bash
+        run: |
+          PROJECT=$(find . -name Wuduh.xcodeproj -type d -print -quit)
+          test -n "$PROJECT"
+          echo "APP_DIR=$(dirname "$PROJECT")" >> "$GITHUB_ENV"
+          xcodebuild -version
+      - name: Resolve pinned dependencies
+        shell: bash
+        run: |
+          cd "$APP_DIR"
+          xcodebuild -resolvePackageDependencies -project Wuduh.xcodeproj -scheme Wuduh
+      - name: Simulator tests
+        if: inputs.run_tests
+        shell: bash
+        run: |
+          xcrun simctl list devices available -j > "$RUNNER_TEMP/devices.json"
+          DEVICE=$(python3 -c 'import json,os;d=json.load(open(os.environ["RUNNER_TEMP"]+"/devices.json"));print(next(v["udid"] for a in d["devices"].values() for v in a if v["name"].startswith("iPhone") and v["isAvailable"]))')
+          cd "$APP_DIR"
+          xcodebuild test -project Wuduh.xcodeproj -scheme Wuduh -destination "platform=iOS Simulator,id=$DEVICE" -resultBundlePath "$RUNNER_TEMP/WuduhTests.xcresult" CODE_SIGNING_ALLOWED=NO
+      - name: Build unsigned iPhone app
+        shell: bash
+        run: |
+          cd "$APP_DIR"
+          xcodebuild archive -project Wuduh.xcodeproj -scheme Wuduh -configuration Release -destination 'generic/platform=iOS' -archivePath "$RUNNER_TEMP/Wuduh.xcarchive" CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO DEVELOPMENT_TEAM=""
+      - name: Package unsigned IPA
+        shell: bash
+        run: |
+          APP="$RUNNER_TEMP/Wuduh.xcarchive/Products/Applications/Wuduh.app"
+          test -f "$APP/Wuduh"
+          test -f "$APP/realesr-general-x4v3.onnx"
+          test -f "$APP/default.metallib"
+          mkdir -p "$RUNNER_TEMP/package/Payload"
+          cp -R "$APP" "$RUNNER_TEMP/package/Payload/"
+          cd "$RUNNER_TEMP/package"
+          zip -qry Wuduh-iPhone-unsigned.ipa Payload
+          shasum -a 256 Wuduh-iPhone-unsigned.ipa > SHA256.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Wuduh-iPhone-unsigned
+          path: |
+            ${{ runner.temp }}/package/Wuduh-iPhone-unsigned.ipa
+            ${{ runner.temp }}/package/SHA256.txt
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        if: always() && inputs.run_tests
+        with:
+          name: Wuduh-test-results
+          path: ${{ runner.temp }}/WuduhTests.xcresult
+          if-no-files-found: ignore
+          retention-days: 7
