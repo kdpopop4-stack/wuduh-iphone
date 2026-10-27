@@ -1,0 +1,25 @@
+{
+  "status": "archive-and-package-success",
+  "run": "https://github.com/kdpopop4-stack/wuduh-iphone/actions/runs/40449109160",
+  "commit": "c5e736288c8e6ec427f8d6a54c749b1271c0381f",
+  "ipaSHA256": "b0d79d85c7e5bada5f63c0857dbf0466f02d4409ab65c0a2348164cccc5842db",
+  "ipaBytes": 11180581,
+  "architecture": "arm64",
+  "bundleIdentifier": "com.wuduh.video.local",
+  "minimumOS": "17.0",
+  "modelSHA256": "dee961b95762147fbede6aa5fe027b275d55326b054d4808674274b77c29f572",
+  "bundledModel": true,
+  "bundledMetalLibrary": true,
+  "signed": false,
+  "physicalIPhoneTested": false,
+  "fullSimulatorSuite": "incomplete; run 40448477762 cancelled after simulator stalled following successful compilation",
+  "earlierSimulatorChecks": {
+    "run": 40447792605,
+    "passed": [
+      "motion and novel middle frame",
+      "cancel flag",
+      "writer and frame count"
+    ],
+    "AI": "Core ML simulator exception; current source uses CPU on simulator. Full latest suite not completed."
+  }
+}
