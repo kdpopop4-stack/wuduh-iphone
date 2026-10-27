@@ -39,7 +39,7 @@ jobs:
           xcrun simctl list devices available -j > "$RUNNER_TEMP/devices.json"
           DEVICE=$(python3 -c 'import json,os;d=json.load(open(os.environ["RUNNER_TEMP"]+"/devices.json"));print(next(v["udid"] for a in d["devices"].values() for v in a if v["name"].startswith("iPhone") and v["isAvailable"]))')
           cd "$APP_DIR"
-          xcodebuild test -project Wuduh.xcodeproj -scheme Wuduh -destination "platform=iOS Simulator,id=$DEVICE" -resultBundlePath "$RUNNER_TEMP/WuduhTests.xcresult" CODE_SIGNING_ALLOWED=NO
+          xcodebuild test -project Wuduh.xcodeproj -scheme Wuduh -destination "platform=iOS Simulator,arch=arm64,id=$DEVICE" -resultBundlePath "$RUNNER_TEMP/WuduhTests.xcresult" CODE_SIGNING_ALLOWED=NO ONLY_ACTIVE_ARCH=YES
       - name: Build unsigned iPhone app
         shell: bash
         run: |
